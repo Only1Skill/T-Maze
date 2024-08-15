@@ -1,39 +1,31 @@
 package academy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import academy.maze.Generator;
+import academy.maze.MazeReader;
+import academy.maze.MazeRenderer;
+import academy.maze.Solver;
+import academy.maze.dto.Point;
+import academy.maze.impl.AStarSolver;
+import academy.maze.impl.DfsMazeGenerator;
+import academy.maze.impl.DijkstraSolver;
+import academy.maze.impl.PrimMazeGenerator;
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Scanner;
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
+import picocli.CommandLine.*;
 
-@Command(name = "Application Example", version = "Example 1.0", mixinStandardHelpOptions = true)
+@Command(
+        name = "maze-app",
+        mixinStandardHelpOptions = true,
+        version = "maze-app 1.0",
+        description = "Maze generator and solver CLI application.",
+        subcommands = {
+            Application.GenerateCommand.class,
+            Application.SolveCommand.class,
+            Application.InteractiveGenerateCommand.class
+        })
 public class Application implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
-    private static final ObjectReader YAML_READER =
-            new ObjectMapper(new YAMLFactory()).findAndRegisterModules().reader();
-
-    @Option(
-            names = {"-s", "--font-size"},
-            description = "Font size")
-    int fontSize;
-
-    @Parameters(
-            paramLabel = "<word>",
-            defaultValue = "Hello, picocli",
-            description = "Words to be translated into ASCII art.")
-    private String[] words;
-
-    @Option(
-            names = {"-c", "--config"},
-            description = "Path to JSON config file")
-    private File configPath;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Application()).execute(args);
@@ -42,21 +34,162 @@ public class Application implements Runnable {
 
     @Override
     public void run() {
-        var config = loadConfig();
-        LOGGER.atInfo().addKeyValue("config", config).log("Config content");
-
-        // ... logic
+        CommandLine.usage(this, System.out);
     }
 
-    private AppConfig loadConfig() {
-        // fill with cli options
-        if (configPath == null) return new AppConfig(fontSize, words);
+    @Command(name = "generate", description = "Generate a maze with specified algorithm and dimensions.")
+    static class GenerateCommand implements Callable<Integer> {
+        @Option(
+                names = {"-a", "--algorithm"},
+                required = true,
+                description = "Algorithm: dfs or prim")
+        String algorithm;
 
-        // use config file if provided
+        @Option(
+                names = {"-w", "--width"},
+                required = true,
+                description = "Maze width")
+        int width;
+
+        @Option(
+                names = {"-h", "--height"},
+                required = true,
+                description = "Maze height")
+        int height;
+
+        @Option(
+                names = {"-o", "--output"},
+                description = "Output file (optional, prints to console if absent)")
+        File outputFile;
+
+        @Override
+        public Integer call() throws Exception {
+            Generator generator;
+            switch (algorithm.toLowerCase()) {
+                case "dfs":
+                    generator = new DfsMazeGenerator();
+                    break;
+                case "prim":
+                case "kruskal":
+                    generator = new PrimMazeGenerator();
+                    break;
+                default:
+                    System.err.println("Unknown algorithm: " + algorithm);
+                    return 1;
+            }
+            var maze = generator.generate(width, height);
+            if (outputFile == null) {
+                MazeRenderer.printToConsole(maze, null, null, null);
+            } else {
+                MazeRenderer.saveToFile(maze, null, null, null, outputFile.getPath());
+            }
+            return 0;
+        }
+    }
+
+    @Command(name = "solve", description = "Solve a maze with specified algorithm and points.")
+    static class SolveCommand implements Callable<Integer> {
+        @Option(
+                names = {"-a", "--algorithm"},
+                required = true,
+                description = "Algorithm: astar or dijkstra")
+        String algorithm;
+
+        @Option(
+                names = {"-f", "--file"},
+                required = true,
+                description = "Input maze file")
+        File inputFile;
+
+        @Option(
+                names = {"-s", "--start"},
+                required = true,
+                description = "Start point x,y")
+        String startPointStr;
+
+        @Option(
+                names = {"-e", "--end"},
+                required = true,
+                description = "End point x,y")
+        String endPointStr;
+
+        @Option(
+                names = {"-o", "--output"},
+                description = "Output file (optional, prints to console if absent)")
+        File outputFile;
+
+        @Override
+        public Integer call() throws Exception {
+            Solver solver;
+            switch (algorithm.toLowerCase()) {
+                case "astar":
+                    solver = new AStarSolver();
+                    break;
+                case "dijkstra":
+                    solver = new DijkstraSolver();
+                    break;
+                default:
+                    System.err.println("Unknown algorithm: " + algorithm);
+                    return 1;
+            }
+            var maze = MazeReader.readFromFile(inputFile.getPath());
+            Point start = parsePoint(startPointStr);
+            Point end = parsePoint(endPointStr);
+            var path = solver.solve(maze, start, end);
+
+            if (outputFile == null) {
+                MazeRenderer.printToConsole(maze, start, end, path);
+            } else {
+                MazeRenderer.saveToFile(maze, start, end, path, outputFile.getPath());
+            }
+            return 0;
+        }
+    }
+
+    @Command(name = "interactive-generate", description = "Interactively generate a maze.")
+    static class InteractiveGenerateCommand implements Callable<Integer> {
+        @Override
+        public Integer call() throws Exception {
+            Scanner in = new Scanner(System.in);
+            System.out.print("Algorithm (dfs or prim): ");
+            String algorithm = in.nextLine().trim();
+
+            System.out.print("Width: ");
+            int width = Integer.parseInt(in.nextLine());
+
+            System.out.print("Height: ");
+            int height = Integer.parseInt(in.nextLine());
+
+            Generator generator;
+            switch (algorithm.toLowerCase()) {
+                case "dfs":
+                    generator = new DfsMazeGenerator();
+                    break;
+                case "prim":
+                    generator = new PrimMazeGenerator();
+                    break;
+                default:
+                    System.err.println("Unknown algorithm: " + algorithm);
+                    return 1;
+            }
+
+            var maze = generator.generate(width, height);
+            MazeRenderer.printToConsole(maze, null, null, null);
+            return 0;
+        }
+    }
+
+    private static Point parsePoint(String s) {
+        String[] parts = s.split(",");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid point format: " + s + ", expected format: x,y");
+        }
         try {
-            return YAML_READER.readValue(configPath, AppConfig.class);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            int x = Integer.parseInt(parts[0].trim());
+            int y = Integer.parseInt(parts[1].trim());
+            return new Point(x, y);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number in point: " + s);
         }
     }
 }
