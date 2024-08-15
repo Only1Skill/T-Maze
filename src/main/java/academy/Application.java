@@ -10,7 +10,6 @@ import academy.maze.impl.DfsMazeGenerator;
 import academy.maze.impl.DijkstraSolver;
 import academy.maze.impl.PrimMazeGenerator;
 import java.io.File;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
@@ -23,7 +22,6 @@ import picocli.CommandLine.*;
         subcommands = {
             Application.GenerateCommand.class,
             Application.SolveCommand.class,
-            Application.InteractiveGenerateCommand.class
         })
 public class Application implements Runnable {
 
@@ -120,62 +118,34 @@ public class Application implements Runnable {
 
         @Override
         public Integer call() throws Exception {
-            Solver solver;
-            switch (algorithm.toLowerCase()) {
-                case "astar":
-                    solver = new AStarSolver();
-                    break;
-                case "dijkstra":
-                    solver = new DijkstraSolver();
-                    break;
-                default:
-                    System.err.println("Unknown algorithm: " + algorithm);
-                    return 1;
+            try {
+                Solver solver;
+                switch (algorithm.toLowerCase()) {
+                    case "astar":
+                        solver = new AStarSolver();
+                        break;
+                    case "dijkstra":
+                        solver = new DijkstraSolver();
+                        break;
+                    default:
+                        System.err.println("Unknown algorithm: " + algorithm);
+                        return 1;
+                }
+                var maze = MazeReader.readFromFile(inputFile.getPath());
+                Point start = parsePoint(startPointStr);
+                Point end = parsePoint(endPointStr);
+                var path = solver.solve(maze, start, end);
+
+                if (outputFile == null) {
+                    MazeRenderer.printToConsole(maze, start, end, path);
+                } else {
+                    MazeRenderer.saveToFile(maze, start, end, path, outputFile.getPath());
+                }
+                return 0;
+            } catch (IllegalArgumentException e) {
+                System.err.println(e.getMessage());
+                return 128;
             }
-            var maze = MazeReader.readFromFile(inputFile.getPath());
-            Point start = parsePoint(startPointStr);
-            Point end = parsePoint(endPointStr);
-            var path = solver.solve(maze, start, end);
-
-            if (outputFile == null) {
-                MazeRenderer.printToConsole(maze, start, end, path);
-            } else {
-                MazeRenderer.saveToFile(maze, start, end, path, outputFile.getPath());
-            }
-            return 0;
-        }
-    }
-
-    @Command(name = "interactive-generate", description = "Interactively generate a maze.")
-    static class InteractiveGenerateCommand implements Callable<Integer> {
-        @Override
-        public Integer call() throws Exception {
-            Scanner in = new Scanner(System.in);
-            System.out.print("Algorithm (dfs or prim): ");
-            String algorithm = in.nextLine().trim();
-
-            System.out.print("Width: ");
-            int width = Integer.parseInt(in.nextLine());
-
-            System.out.print("Height: ");
-            int height = Integer.parseInt(in.nextLine());
-
-            Generator generator;
-            switch (algorithm.toLowerCase()) {
-                case "dfs":
-                    generator = new DfsMazeGenerator();
-                    break;
-                case "prim":
-                    generator = new PrimMazeGenerator();
-                    break;
-                default:
-                    System.err.println("Unknown algorithm: " + algorithm);
-                    return 1;
-            }
-
-            var maze = generator.generate(width, height);
-            MazeRenderer.printToConsole(maze, null, null, null);
-            return 0;
         }
     }
 

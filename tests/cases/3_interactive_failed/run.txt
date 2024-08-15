@@ -1,1 +1,0 @@
-java -cp target/java-1.0.0.jar backend.academy.Main interactive-generate
