@@ -17,9 +17,12 @@ image: maven:3.9.11-eclipse-temurin-24-noble
   services:
     - name: docker:dind
       alias: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login gitlab.education.tbank.ru:443 -u gitlab-ci-token --password-stdin
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  GITLAB_DOCKER_PROXY: gitlab.education.tbank.ru:443/backend-academy-java-2025/lecture-materials/dependency_proxy/containers
 
 workflow:
   rules:
@@ -63,5 +66,5 @@ Run Black Box Tests:
     - job: Build
       artifacts: true
   script:
-    - docker build --build-arg RUNTIME_IMAGE=eclipse-temurin:24-jre -t app .
+    - docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre -t app .
     - ./tests/run.sh tests/cases
