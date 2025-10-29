@@ -54,7 +54,7 @@
 ```bash
 java -jar app.jar generate --algorithm=dfs --width=10 --height=10 --output=maze1.txt
 java -jar app.jar generate --algorithm=prim --width=10 --height=10 --output=maze2.txt
-java -jar app.jar solve --algorithm=astar --file=maze1.txt --start=0,0 --end=9,9 --output=solution_maze1.txt
+java -jar app.jar solve --algorithm=astar --file=maze1.txt --start=1,1 --end=9,9 --output=solution_maze1.txt
 java -jar app.jar solve --algorithm=dijkstra --file=maze2.txt --start=0,0 --end=9,9 --output=solution_maze2.txt
 ```
 
@@ -152,3 +152,30 @@ java -jar app.jar solve --algorithm=dijkstra --file=maze2.txt --start=0,0 --end=
 Детали о снятии обычных и начислении бонусных баллов можно найти
 в разделе "Информационный блок" (см. [1.7 Баллы и оценка за курс](https://my.tbank.ru/edu/educate/course/9f925592-6abb-40a2-ba59-70fe229094aa/unit/c4c883bd-fdf5-4165-9762-b19dc7bc6770)).
 
+## Частые вопросы и проблемы
+
+### Не запускается собранный jar файл
+Возникают ошибки типа
+- `no main manifest attribute, in target/project-1.0.jar`
+- не найдены какие либо классы: `java.lang.NoClassDefFoundError: picocli/CommandLine`
+
+**Решение**
+
+Использовать для сборки fat jar, содержащий все необходимые зависимости:
+```bash
+$ ./mvnw clean package shade:shade
+```
+А для запуска
+```bash
+$ java -cp .target/project-1.0.jar academy.Application
+```
+Альтернативный вариант, использовать [assembly plugin](https://maven.apache.org/plugins/maven-assembly-plugin/)
+
+### При запуске black-box тестов возникает ошибка несоответствия вывода ожидаемому результату, хотя визуально все выглядит одинаково.
+Это может происходить из-за различия символа перевода строки в Windows и Linux-подобных системах. 
+
+В Windows используется `\r\n`, а в Linux `\n` Тесты ореентируются на Linux-стиль.
+
+**Решение**
+
+В Java можно переопредллить системный символ перевода строки, передав при запуске параметр `-Dline.separator=$'\n'` или вызвав `System.setProperty("line.separator", "\n");`.
