@@ -155,6 +155,7 @@ java -jar app.jar solve --algorithm=dijkstra --file=maze2.txt --start=0,0 --end=
 ## Частые вопросы и проблемы
 
 ### Не запускается собранный jar файл
+
 Возникают ошибки типа
 - `no main manifest attribute, in target/project-1.0.jar`
 - не найдены какие либо классы: `java.lang.NoClassDefFoundError: picocli/CommandLine`
@@ -162,17 +163,22 @@ java -jar app.jar solve --algorithm=dijkstra --file=maze2.txt --start=0,0 --end=
 **Решение**
 
 Использовать для сборки fat jar, содержащий все необходимые зависимости:
+
 ```bash
 $ ./mvnw clean package shade:shade
 ```
+
 А для запуска
+
 ```bash
 $ java -cp .target/project-1.0.jar academy.Application
 ```
+
 Альтернативный вариант, использовать [assembly plugin](https://maven.apache.org/plugins/maven-assembly-plugin/)
 
 ### При запуске black-box тестов возникает ошибка несоответствия вывода ожидаемому результату, хотя визуально все выглядит одинаково.
-Это может происходить из-за различия символа перевода строки в Windows и Linux-подобных системах. 
+
+Это может происходить из-за различия символа перевода строки в Windows и Linux-подобных системах.
 
 В Windows используется `\r\n`, а в Linux `\n` Тесты ореентируются на Linux-стиль.
 
