@@ -1,165 +1,156 @@
 package academy;
 
-import academy.maze.Generator;
-import academy.maze.MazeReader;
-import academy.maze.MazeRenderer;
-import academy.maze.Solver;
-import academy.maze.dto.Point;
-import academy.maze.impl.AStarSolver;
-import academy.maze.impl.DfsMazeGenerator;
-import academy.maze.impl.DijkstraSolver;
-import academy.maze.impl.PrimMazeGenerator;
-import java.io.File;
-import java.util.concurrent.Callable;
+import academy.maze.InteractiveMazeManager;
+import academy.maze.NotInteractiveMazeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @Command(
         name = "maze-app",
+        version = "1.0",
         mixinStandardHelpOptions = true,
-        version = "maze-app 1.0",
         description = "Maze generator and solver CLI application.",
-        subcommands = {
-            Application.GenerateCommand.class,
-            Application.SolveCommand.class,
-        })
+        subcommands = {Application.GenerateCommand.class, Application.SolveCommand.class})
 public class Application implements Runnable {
 
     public static void main(String[] args) {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "OFF");
         int exitCode = new CommandLine(new Application()).execute(args);
         System.exit(exitCode);
     }
 
     @Override
     public void run() {
-        CommandLine.usage(this, System.out);
+        InteractiveMazeManager.start();
     }
 
     @Command(name = "generate", description = "Generate a maze with specified algorithm and dimensions.")
-    static class GenerateCommand implements Callable<Integer> {
-        @Option(
-                names = {"-a", "--algorithm"},
-                required = true,
-                description = "Algorithm: dfs or prim")
-        String algorithm;
+    static class GenerateCommand implements Runnable {
+
+        private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCommand.class);
 
         @Option(
-                names = {"-w", "--width"},
+                names = {"--algorithm", "-a"},
                 required = true,
-                description = "Maze width")
-        int width;
+                description = "Maze generation algorithm (dfs, prim, binary)")
+        private String algorithm;
 
         @Option(
-                names = {"-h", "--height"},
+                names = {"--width", "-w"},
                 required = true,
-                description = "Maze height")
-        int height;
+                description = "Width of the maze")
+        private int width;
 
         @Option(
-                names = {"-o", "--output"},
-                description = "Output file (optional, prints to console if absent)")
-        File outputFile;
+                names = {"--height", "-h"},
+                required = true,
+                description = "Height of the maze")
+        private int height;
+
+        @Option(
+                names = {"--output", "-o"},
+                required = true,
+                description = "Output file for the generated maze")
+        private String output;
 
         @Override
-        public Integer call() throws Exception {
-            Generator generator;
-            switch (algorithm.toLowerCase()) {
-                case "dfs":
-                    generator = new DfsMazeGenerator();
-                    break;
-                case "prim":
-                case "kruskal":
-                    generator = new PrimMazeGenerator();
-                    break;
-                default:
-                    System.err.println("Unknown algorithm: " + algorithm);
-                    return 1;
+        public void run() {
+            LOGGER.info(
+                    "Запуск генерации лабиринта: algorithm={}, size={}x{}, output={}",
+                    algorithm,
+                    width,
+                    height,
+                    output);
+            try {
+                NotInteractiveMazeManager.generateMaze(algorithm, width, height, output);
+            } catch (Exception e) {
             }
-            var maze = generator.generate(width, height);
-            if (outputFile == null) {
-                MazeRenderer.printToConsole(maze, null, null, null);
-            } else {
-                MazeRenderer.saveToFile(maze, null, null, null, outputFile.getPath());
-            }
-            return 0;
         }
     }
 
     @Command(name = "solve", description = "Solve a maze with specified algorithm and points.")
-    static class SolveCommand implements Callable<Integer> {
-        @Option(
-                names = {"-a", "--algorithm"},
-                required = true,
-                description = "Algorithm: astar or dijkstra")
-        String algorithm;
+    static class SolveCommand implements Runnable {
+
+        private static final Logger LOGGER = LoggerFactory.getLogger(SolveCommand.class);
 
         @Option(
-                names = {"-f", "--file"},
+                names = {"--algorithm", "-a"},
+                required = true,
+                description = "Maze solving algorithm (astar, dijkstra, bfs)")
+        private String algorithm;
+
+        @Option(
+                names = {"--file", "-f"},
                 required = true,
                 description = "Input maze file")
-        File inputFile;
+        private String file;
 
         @Option(
-                names = {"-s", "--start"},
+                names = {"--start", "-s"},
                 required = true,
-                description = "Start point x,y")
-        String startPointStr;
+                description = "Start coordinates in format x,y")
+        private String start;
 
         @Option(
-                names = {"-e", "--end"},
+                names = {"--end", "-e"},
                 required = true,
-                description = "End point x,y")
-        String endPointStr;
+                description = "End coordinates in format x,y")
+        private String end;
 
         @Option(
-                names = {"-o", "--output"},
-                description = "Output file (optional, prints to console if absent)")
-        File outputFile;
+                names = {"--output", "-o"},
+                required = true,
+                description = "Output file for the solved maze")
+        private String output;
 
         @Override
-        public Integer call() throws Exception {
-            try {
-                Solver solver;
-                switch (algorithm.toLowerCase()) {
-                    case "astar":
-                        solver = new AStarSolver();
-                        break;
-                    case "dijkstra":
-                        solver = new DijkstraSolver();
-                        break;
-                    default:
-                        System.err.println("Unknown algorithm: " + algorithm);
-                        return 1;
-                }
-                var maze = MazeReader.readFromFile(inputFile.getPath());
-                Point start = parsePoint(startPointStr);
-                Point end = parsePoint(endPointStr);
-                var path = solver.solve(maze, start, end);
+        public void run() {
+            LOGGER.info(
+                    "Solving maze: file={}, algorithm={}, start={}, end={}, output={}",
+                    file,
+                    algorithm,
+                    start,
+                    end,
+                    output);
 
-                if (outputFile == null) {
-                    MazeRenderer.printToConsole(maze, start, end, path);
-                } else {
-                    MazeRenderer.saveToFile(maze, start, end, path, outputFile.getPath());
-                }
-                return 0;
-            } catch (IllegalArgumentException e) {
+            try {
+                int[] startCoords = parseCoords(start);
+                int[] endCoords = parseCoords(end);
+                NotInteractiveMazeManager.solveMaze(algorithm, file, startCoords, endCoords, output);
+                LOGGER.info("Лабиринт решен успешно. Сохранено в {}", output);
+            } catch (Exception e) {
                 System.err.println(e.getMessage());
-                return 128;
             }
         }
-    }
 
-    private static Point parsePoint(String s) {
-        String[] parts = s.split(",");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid point format: " + s + ", expected format: x,y");
-        }
-        try {
-            int x = Integer.parseInt(parts[0].trim());
-            int y = Integer.parseInt(parts[1].trim());
-            return new Point(x, y);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number in point: " + s);
+        private int[] parseCoords(String s) {
+            // Проверяем, что строка содержит ровно одну запятую
+            if (!s.contains(",")) {
+                String errorMessage = "Invalid point format: " + s + ", expected format: x,y";
+                throw new IllegalArgumentException(errorMessage);
+            }
+
+            String[] parts = s.split(",");
+            if (parts.length != 2) {
+                String errorMessage = "Invalid point format: " + s + ", expected format: x,y";
+                throw new IllegalArgumentException(errorMessage);
+            }
+
+            // Дополнительная проверка что оба числа не пустые
+            if (parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+                String errorMessage = "Invalid point format: " + s + ", expected format: x,y";
+                throw new IllegalArgumentException(errorMessage);
+            }
+
+            try {
+                return new int[] {Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())};
+            } catch (NumberFormatException e) {
+                String errorMessage = "Invalid point format: " + s + ", coordinates must be integers";
+                throw new IllegalArgumentException(errorMessage);
+            }
         }
     }
 }

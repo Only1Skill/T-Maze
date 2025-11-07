@@ -1,4 +1,4 @@
-package academy.maze;
+package academy.maze.solver;
 
 import academy.maze.dto.Maze;
 import academy.maze.dto.Path;

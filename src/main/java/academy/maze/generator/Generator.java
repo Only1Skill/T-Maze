@@ -1,4 +1,4 @@
-package academy.maze;
+package academy.maze.generator;
 
 import academy.maze.dto.Maze;
 
