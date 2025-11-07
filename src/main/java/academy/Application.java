@@ -67,6 +67,7 @@ public class Application implements Runnable {
             try {
                 NotInteractiveMazeManager.generateMaze(algorithm, width, height, output);
             } catch (Exception e) {
+                System.err.println(e.getMessage());
             }
         }
     }

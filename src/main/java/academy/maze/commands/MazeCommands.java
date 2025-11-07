@@ -61,22 +61,6 @@ public class MazeCommands {
         return new Maze(grid);
     }
 
-    private static Maze parseMazeLines(List<String> lines) {
-        int height = lines.size();
-        int width = lines.get(0).length();
-
-        CellType[][] grid = new CellType[height][width];
-
-        for (int y = 0; y < height; y++) {
-            String line = lines.get(y);
-            for (int x = 0; x < width; x++) {
-                grid[y][x] = charToCellType(line.charAt(x));
-            }
-        }
-
-        return new Maze(grid);
-    }
-
     public static void saveMazeToFile(Maze maze, String filename) throws IOException {
         // Исправляем путь для Docker
         String fixedFilename = fixPathForDocker(filename);

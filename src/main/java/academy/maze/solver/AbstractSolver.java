@@ -46,11 +46,4 @@ public abstract class AbstractSolver implements Solver {
         Collections.reverse(points);
         return new Path(points.toArray(new Point[0]));
     }
-
-    private void checkIfAlreadySolved(int x, int y, Maze maze) {
-        CellType cell = maze.cells()[y][x];
-        if (cell == CellType.PATH || cell == CellType.START || cell == CellType.END) {
-            throw new RuntimeException("В лабиринте уже есть решение");
-        }
-    }
 }

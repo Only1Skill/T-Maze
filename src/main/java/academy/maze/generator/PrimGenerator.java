@@ -43,8 +43,8 @@ public class PrimGenerator extends AbstractGenerator {
     }
 
     private void connectCells(Point cell1, Point cell2, CellType[][] maze) {
-        int wallX = (cell1.x() + cell2.x()) / 2;
-        int wallY = (cell1.y() + cell2.y()) / 2;
+        int wallX = cell1.x() + (cell2.x() - cell1.x()) / 2;
+        int wallY = cell1.y() + (cell2.y() - cell1.y()) / 2;
         maze[wallY][wallX] = getRandomCoverage(useCoatings);
         maze[cell1.y()][cell1.x()] = getRandomCoverage(useCoatings);
     }
