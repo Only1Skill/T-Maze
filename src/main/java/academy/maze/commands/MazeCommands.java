@@ -237,8 +237,8 @@ public class MazeCommands {
     private static CellType charToCellType(char c) {
         return switch (c) {
             case '#' -> CellType.WALL;
-            case 'S', 'O' -> CellType.START;
-            case 'E', 'X' -> CellType.END;
+            case 'O' -> CellType.START;
+            case 'X' -> CellType.END;
             case '.' -> CellType.PATH;
             case 'G' -> CellType.GRASS;
             case 'N' -> CellType.SAND;

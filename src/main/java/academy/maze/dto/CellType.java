@@ -2,8 +2,8 @@ package academy.maze.dto;
 
 /** Тип ячейки в лабиринте. WALL - стена, PATH - свободная ячейка. */
 public enum CellType {
-    START('S'),
-    END('E'),
+    START('O'),
+    END('X'),
     WALL('#'),
     PATH('.'),
     GRASS('G'),
