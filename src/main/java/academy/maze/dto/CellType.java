@@ -2,9 +2,7 @@ package academy.maze.dto;
 
 import lombok.Getter;
 
-/**
- * Тип ячейки в лабиринте. WALL - стена, PATH - свободная ячейка.
- */
+/** Тип ячейки в лабиринте. WALL - стена, PATH - свободная ячейка. */
 @Getter
 public enum CellType {
     START('O'),
@@ -21,5 +19,4 @@ public enum CellType {
     CellType(char symbol) {
         this.symbol = symbol;
     }
-
 }

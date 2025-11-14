@@ -1,5 +1,7 @@
 package academy;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import academy.maze.dto.CellType;
 import academy.maze.dto.Maze;
 import academy.maze.generator.BinaryTreeGenerator;
@@ -7,8 +9,6 @@ import academy.maze.generator.DFSGenerator;
 import academy.maze.generator.PrimGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Maze Generator Tests")
 class MazeGeneratorTest {
@@ -31,8 +31,7 @@ class MazeGeneratorTest {
         assertEquals(width, maze.cells()[0].length, "Maze width should match");
 
         // Проверка границ лабиринта
-        assertTrue(hasValidBorders(maze.cells(), width, height),
-                   "Maze should have valid wall borders");
+        assertTrue(hasValidBorders(maze.cells(), width, height), "Maze should have valid wall borders");
     }
 
     @Test

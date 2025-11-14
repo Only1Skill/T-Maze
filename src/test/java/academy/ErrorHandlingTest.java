@@ -1,5 +1,7 @@
 package academy;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import academy.maze.dto.CellType;
 import academy.maze.dto.Maze;
 import academy.maze.dto.Point;
@@ -7,8 +9,6 @@ import academy.maze.generator.DFSGenerator;
 import academy.maze.solver.AStarSolver;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Error Handling and Edge Cases Tests")
 class ErrorHandlingTest {
@@ -20,13 +20,19 @@ class ErrorHandlingTest {
         DFSGenerator generator = new DFSGenerator(false);
 
         // Действие и Проверка - используем лямбду для отложенного выполнения
-        assertThrows(NegativeArraySizeException.class, () -> {
-            generator.generate(-1, 10);
-        }, "Should throw exception for negative width");
+        assertThrows(
+                NegativeArraySizeException.class,
+                () -> {
+                    generator.generate(-1, 10);
+                },
+                "Should throw exception for negative width");
 
-        assertThrows(NegativeArraySizeException.class, () -> {
-            generator.generate(10, -1);
-        }, "Should throw exception for negative height");
+        assertThrows(
+                NegativeArraySizeException.class,
+                () -> {
+                    generator.generate(10, -1);
+                },
+                "Should throw exception for negative height");
     }
 
     @Test
@@ -40,9 +46,12 @@ class ErrorHandlingTest {
         Point end = new Point(3, 3);
 
         // Действие и Проверка
-        assertThrows(RuntimeException.class, () -> {
-            solver.solve(maze, invalidStart, end);
-        }, "Should throw exception when start point is on wall");
+        assertThrows(
+                RuntimeException.class,
+                () -> {
+                    solver.solve(maze, invalidStart, end);
+                },
+                "Should throw exception when start point is on wall");
     }
 
     @Test
@@ -56,9 +65,12 @@ class ErrorHandlingTest {
         Point end = new Point(3, 3);
 
         // Действие и Проверка
-        assertThrows(RuntimeException.class, () -> {
-            solver.solve(maze, start, end);
-        }, "Should throw exception when no path exists");
+        assertThrows(
+                RuntimeException.class,
+                () -> {
+                    solver.solve(maze, start, end);
+                },
+                "Should throw exception when no path exists");
     }
 
     @Test
@@ -72,9 +84,12 @@ class ErrorHandlingTest {
         Point validPoint = new Point(1, 1);
 
         // Действие и Проверка
-        assertThrows(RuntimeException.class, () -> {
-            solver.solve(maze, outOfBounds, validPoint);
-        }, "Should throw exception for out of bounds coordinates");
+        assertThrows(
+                RuntimeException.class,
+                () -> {
+                    solver.solve(maze, outOfBounds, validPoint);
+                },
+                "Should throw exception for out of bounds coordinates");
     }
 
     // Вспомогательные методы

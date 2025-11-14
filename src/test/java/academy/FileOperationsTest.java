@@ -1,21 +1,20 @@
 package academy;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import academy.maze.NotInteractiveMazeManager;
 import academy.maze.commands.MazeCommands;
 import academy.maze.dto.CellType;
 import academy.maze.dto.Maze;
 import academy.maze.dto.Point;
 import academy.maze.generator.DFSGenerator;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @DisplayName("File Operations Integration Tests")
 class FileOperationsTest {
@@ -37,10 +36,8 @@ class FileOperationsTest {
 
         // Шаг 3: Проверка
         assertNotNull(loadedMaze, "Loaded maze should not be null");
-        assertEquals(originalMaze.cells().length, loadedMaze.cells().length,
-                    "Height should match after loading");
-        assertEquals(originalMaze.cells()[0].length, loadedMaze.cells()[0].length,
-                    "Width should match after loading");
+        assertEquals(originalMaze.cells().length, loadedMaze.cells().length, "Height should match after loading");
+        assertEquals(originalMaze.cells()[0].length, loadedMaze.cells()[0].length, "Width should match after loading");
 
         // Детальная проверка содержимого
         verifyMazeContentMatches(originalMaze, loadedMaze);
@@ -49,9 +46,12 @@ class FileOperationsTest {
     @Test
     @DisplayName("Should throw exception for non-existent file")
     void shouldThrowExceptionForNonExistentFile() {
-        assertThrows(IOException.class, () -> {
-            MazeCommands.loadMazeFromFile("non_existent_file.txt");
-        }, "Should throw IOException for non-existent file");
+        assertThrows(
+                IOException.class,
+                () -> {
+                    MazeCommands.loadMazeFromFile("non_existent_file.txt");
+                },
+                "Should throw IOException for non-existent file");
     }
 
     @Test
@@ -62,17 +62,11 @@ class FileOperationsTest {
         CellType[][] grid = createSimpleMaze();
 
         // Устанавливаем начальную и конечную точки в лабиринте
-        grid[1][1] = CellType.START;  // Начальная точка O
-        grid[3][3] = CellType.END;    // Конечная точка X
+        grid[1][1] = CellType.START; // Начальная точка O
+        grid[3][3] = CellType.END; // Конечная точка X
 
         Maze maze = new Maze(grid);
-        List<Point> path = List.of(
-            new Point(1, 1),
-            new Point(2, 1),
-            new Point(3, 1),
-            new Point(3, 2),
-            new Point(3, 3)
-        );
+        List<Point> path = List.of(new Point(1, 1), new Point(2, 1), new Point(3, 1), new Point(3, 2), new Point(3, 3));
 
         // Действие
         MazeCommands.saveSolutionToFile(maze, path, solutionFile.toString());
@@ -129,8 +123,10 @@ class FileOperationsTest {
 
         for (int y = 0; y < originalCells.length; y++) {
             for (int x = 0; x < originalCells[y].length; x++) {
-                assertEquals(originalCells[y][x], loadedCells[y][x],
-                    String.format("Cell at (%d, %d) should match after save/load", x, y));
+                assertEquals(
+                        originalCells[y][x],
+                        loadedCells[y][x],
+                        String.format("Cell at (%d, %d) should match after save/load", x, y));
             }
         }
     }

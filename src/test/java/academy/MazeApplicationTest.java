@@ -1,16 +1,16 @@
 package academy;
 
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Path;
 
 @DisplayName("Maze Application Comprehensive Tests")
 public class MazeApplicationTest {
 
     @TempDir
     protected Path tempDir;
+
     protected Path testMazeFile;
     protected Path testSolutionFile;
 
