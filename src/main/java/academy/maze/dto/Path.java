@@ -6,4 +6,5 @@ package academy.maze.dto;
  *
  * @param points координаты точек пути.
  */
-public record Path(Point[] points) {}
+public record Path(Point[] points) {
+}

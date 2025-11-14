@@ -9,11 +9,11 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(
-        name = "maze-app",
-        version = "1.0",
-        mixinStandardHelpOptions = true,
-        description = "Maze generator and solver CLI application.",
-        subcommands = {Application.GenerateCommand.class, Application.SolveCommand.class})
+    name = "maze-app",
+    version = "1.0",
+    mixinStandardHelpOptions = true,
+    description = "Maze generator and solver CLI application.",
+    subcommands = {Application.GenerateCommand.class, Application.SolveCommand.class})
 public class Application implements Runnable {
 
     public static void main(String[] args) {
@@ -33,37 +33,37 @@ public class Application implements Runnable {
         private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCommand.class);
 
         @Option(
-                names = {"--algorithm", "-a"},
-                required = true,
-                description = "Maze generation algorithm (dfs, prim, binary)")
+            names = {"--algorithm", "-a"},
+            required = true,
+            description = "Maze generation algorithm (dfs, prim, binary)")
         private String algorithm;
 
         @Option(
-                names = {"--width", "-w"},
-                required = true,
-                description = "Width of the maze")
+            names = {"--width", "-w"},
+            required = true,
+            description = "Width of the maze")
         private int width;
 
         @Option(
-                names = {"--height", "-h"},
-                required = true,
-                description = "Height of the maze")
+            names = {"--height", "-h"},
+            required = true,
+            description = "Height of the maze")
         private int height;
 
         @Option(
-                names = {"--output", "-o"},
-                required = true,
-                description = "Output file for the generated maze")
+            names = {"--output", "-o"},
+            required = true,
+            description = "Output file for the generated maze")
         private String output;
 
         @Override
         public void run() {
             LOGGER.info(
-                    "Запуск генерации лабиринта: algorithm={}, size={}x{}, output={}",
-                    algorithm,
-                    width,
-                    height,
-                    output);
+                "Запуск генерации лабиринта: algorithm={}, size={}x{}, output={}",
+                algorithm,
+                width,
+                height,
+                output);
             try {
                 NotInteractiveMazeManager.generateMaze(algorithm, width, height, output);
             } catch (Exception e) {
@@ -78,44 +78,44 @@ public class Application implements Runnable {
         private static final Logger LOGGER = LoggerFactory.getLogger(SolveCommand.class);
 
         @Option(
-                names = {"--algorithm", "-a"},
-                required = true,
-                description = "Maze solving algorithm (astar, dijkstra, bfs)")
+            names = {"--algorithm", "-a"},
+            required = true,
+            description = "Maze solving algorithm (astar, dijkstra, bfs)")
         private String algorithm;
 
         @Option(
-                names = {"--file", "-f"},
-                required = true,
-                description = "Input maze file")
+            names = {"--file", "-f"},
+            required = true,
+            description = "Input maze file")
         private String file;
 
         @Option(
-                names = {"--start", "-s"},
-                required = true,
-                description = "Start coordinates in format x,y")
+            names = {"--start", "-s"},
+            required = true,
+            description = "Start coordinates in format x,y")
         private String start;
 
         @Option(
-                names = {"--end", "-e"},
-                required = true,
-                description = "End coordinates in format x,y")
+            names = {"--end", "-e"},
+            required = true,
+            description = "End coordinates in format x,y")
         private String end;
 
         @Option(
-                names = {"--output", "-o"},
-                required = true,
-                description = "Output file for the solved maze")
+            names = {"--output", "-o"},
+            required = true,
+            description = "Output file for the solved maze")
         private String output;
 
         @Override
         public void run() {
             LOGGER.info(
-                    "Solving maze: file={}, algorithm={}, start={}, end={}, output={}",
-                    file,
-                    algorithm,
-                    start,
-                    end,
-                    output);
+                "Solving maze: file={}, algorithm={}, start={}, end={}, output={}",
+                file,
+                algorithm,
+                start,
+                end,
+                output);
 
             try {
                 int[] startCoords = parseCoords(start);
@@ -147,7 +147,7 @@ public class Application implements Runnable {
             }
 
             try {
-                return new int[] {Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())};
+                return new int[]{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())};
             } catch (NumberFormatException e) {
                 String errorMessage = "Invalid point format: " + s + ", coordinates must be integers";
                 throw new IllegalArgumentException(errorMessage);

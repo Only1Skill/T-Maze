@@ -2,13 +2,15 @@ package academy.maze.generator;
 
 import academy.maze.dto.Maze;
 
-/** Генератор лабиринта */
+/**
+ * Генератор лабиринта
+ */
 public interface Generator {
 
     /**
      * Генерирует лабиринт.
      *
-     * @param width ширина лабиринта.
+     * @param width  ширина лабиринта.
      * @param height высота лабиринта.
      * @return лабиринт
      * @throws IllegalArgumentException если невозможно сгенерировать лабиринт.

@@ -11,7 +11,7 @@ public abstract class AbstractGenerator implements Generator {
 
     protected final Random random = new Random();
     protected final boolean useCoatings;
-    static final int[][] DIRECTIONS = new int[][] {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
+    static final int[][] DIRECTIONS = new int[][]{{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
     private final List<CellType> COVERAGE_TYPES = List.of(CellType.GRASS, CellType.SAND, CellType.WATER);
 
     protected AbstractGenerator(boolean useCoatings) {

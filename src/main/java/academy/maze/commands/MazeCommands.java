@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Queue;
 
 public class MazeCommands {
-
     public static Maze loadMazeFromFile(String filePath) throws IOException {
         // Обработка пути для Docker контейнера
         if (filePath.contains(":/")) {
@@ -47,7 +46,7 @@ public class MazeCommands {
 
         List<String> lines = Files.readAllLines(path);
         int height = lines.size();
-        int width = lines.get(0).length();
+        int width = lines.getFirst().length();
 
         CellType[][] grid = new CellType[height][width];
 
@@ -227,8 +226,8 @@ public class MazeCommands {
         return switch (symbol) {
             case '#' -> "▓"; // стена
             case ' ' -> "░"; // путь
-            case 'S' -> "●"; // старт
-            case 'E' -> "★"; // финиш
+            case 'O' -> "●"; // старт
+            case 'X' -> "★"; // финиш
             case '.' -> "•"; // найденный путь
             default -> String.valueOf(symbol);
         };

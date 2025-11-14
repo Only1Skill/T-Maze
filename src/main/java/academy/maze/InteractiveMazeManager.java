@@ -29,7 +29,7 @@ public class InteractiveMazeManager {
             System.out.print("> ");
 
             int choice = readInt();
-            input.nextLine(); // consume newline
+            input.nextLine();
 
             try {
                 switch (choice) {
@@ -124,11 +124,11 @@ public class InteractiveMazeManager {
         grid[end.y()][end.x()] = CellType.END;
 
         var solution =
-                switch (algorithm) {
-                    case 1 -> new AStarSolver().solve(maze, start, end);
-                    case 2 -> new DijkstraSolver().solve(maze, start, end);
-                    default -> throw new IllegalArgumentException("Неизвестный алгоритм");
-                };
+            switch (algorithm) {
+                case 1 -> new AStarSolver().solve(maze, start, end);
+                case 2 -> new DijkstraSolver().solve(maze, start, end);
+                default -> throw new IllegalArgumentException("Неизвестный алгоритм");
+            };
 
         System.out.println("\nНайденный путь:");
         MazeCommands.printMazeWithPath(maze, Arrays.asList(solution.points()), useUnicode);
@@ -142,7 +142,7 @@ public class InteractiveMazeManager {
 
     private static Point selectStartPoint(Maze maze) {
         System.out.println("Выберите начальную точку:");
-        System.out.println("1. Найти автоматически (S)");
+        System.out.println("1. Найти автоматически (O)");
         System.out.println("2. Указать вручную");
         System.out.println("3. Выбрать случайно");
         System.out.print("> ");
@@ -163,7 +163,7 @@ public class InteractiveMazeManager {
 
     private static Point selectEndPoint(Maze maze, Point start) {
         System.out.println("Выберите конечную точку:");
-        System.out.println("1. Найти автоматически (E)");
+        System.out.println("1. Найти автоматически (X)");
         System.out.println("2. Указать вручную");
         System.out.println("3. Выбрать случайно");
         System.out.print("> ");
@@ -172,15 +172,15 @@ public class InteractiveMazeManager {
         input.nextLine();
 
         Point end =
-                switch (choice) {
-                    case 1 -> MazeCommands.findCellByType(maze, CellType.END);
-                    case 2 -> readPointFromUser(maze, "конечную");
-                    case 3 -> findRandomPoint(maze);
-                    default -> {
-                        System.out.println("Неверный выбор, используется автоматический поиск");
-                        yield MazeCommands.findCellByType(maze, CellType.END);
-                    }
-                };
+            switch (choice) {
+                case 1 -> MazeCommands.findCellByType(maze, CellType.END);
+                case 2 -> readPointFromUser(maze, "конечную");
+                case 3 -> findRandomPoint(maze);
+                default -> {
+                    System.out.println("Неверный выбор, используется автоматический поиск");
+                    yield MazeCommands.findCellByType(maze, CellType.END);
+                }
+            };
 
         // Убедимся, что начальная и конечная точки разные
         while (end.equals(start)) {

@@ -56,15 +56,15 @@ public class NotInteractiveMazeManager {
     }
 
     public static void solveMaze(
-            String algorithm, String inputFile, int[] startCoords, int[] endCoords, String outputFile)
-            throws IOException {
+        String algorithm, String inputFile, int[] startCoords, int[] endCoords, String outputFile)
+        throws IOException {
         log.info(
-                "Решение лабиринта алгоритмом {} от ({},{}) до ({},{})",
-                algorithm,
-                startCoords[0],
-                startCoords[1],
-                endCoords[0],
-                endCoords[1]);
+            "Решение лабиринта алгоритмом {} от ({},{}) до ({},{})",
+            algorithm,
+            startCoords[0],
+            startCoords[1],
+            endCoords[0],
+            endCoords[1]);
 
         // Обработка путей для Docker контейнера
         inputFile = fixPathForDocker(inputFile);
