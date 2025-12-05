@@ -1,22 +1,29 @@
 package academy.maze.dto;
 
+import java.util.Arrays;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /** Тип ячейки в лабиринте. WALL - стена, PATH - свободная ячейка. */
 @Getter
+@AllArgsConstructor
 public enum CellType {
-    START('O'),
-    END('X'),
-    WALL('#'),
-    PATH('.'),
-    GRASS('G'),
-    SAND('N'),
-    WATER('W'),
-    EMPTY(' ');
+    WALL('#', "▓"),
+    START('O', "●"),
+    END('X', "★"),
+    PATH('.', "•"),
+    GRASS('G', "G"),
+    SAND('N', "N"),
+    WATER('W', "W"),
+    EMPTY(' ', "░");
 
     private final char symbol;
+    private final String unicode;
 
-    CellType(char symbol) {
-        this.symbol = symbol;
+    public static CellType fromChar(char symbol) {
+        return Arrays.stream(values())
+                .filter(type -> type.symbol == symbol)
+                .findFirst()
+                .orElse(EMPTY);
     }
 }

@@ -32,9 +32,9 @@ public class PrimGenerator extends AbstractGenerator {
 
     private List<Point> getCarvedNeighbors(Point point, CellType[][] maze, int width, int height) {
         List<Point> carved = new ArrayList<>();
-        for (int[] dir : DIRECTIONS) {
-            int nx = point.x() + dir[0];
-            int ny = point.y() + dir[1];
+        for (Direction dir : Direction.values()) {
+            int nx = point.x() + dir.dx;
+            int ny = point.y() + dir.dy;
             if (isValidCell(nx, ny, width, height) && maze[ny][nx] != CellType.WALL) {
                 carved.add(new Point(nx, ny));
             }
@@ -50,9 +50,9 @@ public class PrimGenerator extends AbstractGenerator {
     }
 
     private void addToFrontier(Point point, List<Point> frontier, CellType[][] maze, int width, int height) {
-        for (int[] dir : DIRECTIONS) {
-            int nx = point.x() + dir[0];
-            int ny = point.y() + dir[1];
+        for (Direction dir : Direction.values()) {
+            int nx = point.x() + dir.dx;
+            int ny = point.y() + dir.dy;
             Point neighbor = new Point(nx, ny);
             if (isValidCell(nx, ny, width, height) && maze[ny][nx] == CellType.WALL && !frontier.contains(neighbor)) {
                 frontier.add(neighbor);

@@ -6,13 +6,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import lombok.AllArgsConstructor;
 
 public abstract class AbstractGenerator implements Generator {
 
+    private static final int STEP = 2;
+
+    @AllArgsConstructor
+    protected enum Direction {
+        UP(0, -STEP),
+        DOWN(0, STEP),
+        LEFT(-STEP, 0),
+        RIGHT(STEP, 0);
+
+        final int dx;
+        final int dy;
+    }
+
     protected final Random random = new Random();
     protected final boolean useCoatings;
-    static final int[][] DIRECTIONS = new int[][] {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
-    private final List<CellType> COVERAGE_TYPES = List.of(CellType.GRASS, CellType.SAND, CellType.WATER);
+    private static final List<CellType> COVERAGE_TYPES = List.of(CellType.GRASS, CellType.SAND, CellType.WATER);
 
     protected AbstractGenerator(boolean useCoatings) {
         this.useCoatings = useCoatings;
@@ -31,9 +44,9 @@ public abstract class AbstractGenerator implements Generator {
 
     protected List<Point> findNeighbours(Point from, int width, int height, CellType[][] maze) {
         List<Point> neighbours = new ArrayList<>();
-        for (int[] dir : DIRECTIONS) {
-            int nx = from.x() + dir[0];
-            int ny = from.y() + dir[1];
+        for (Direction dir : Direction.values()) {
+            int nx = from.x() + dir.dx;
+            int ny = from.y() + dir.dy;
             if (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1 && maze[ny][nx] == CellType.WALL) {
                 neighbours.add(new Point(nx, ny));
             }

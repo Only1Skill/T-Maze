@@ -5,46 +5,28 @@ import academy.maze.dto.Maze;
 import academy.maze.dto.Point;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MazeCommands {
+
+    public static final String TESTS = "/tests";
+
+    private static final List<Path> SEARCH_ROOTS =
+            List.of(Path.of(""), Path.of("src", "main", "resources"), Path.of("tests"), Path.of(TESTS));
+
     public static Maze loadMazeFromFile(String filePath) throws IOException {
-        // Обработка пути для Docker контейнера
-        if (filePath.contains(":/")) {
-            String[] parts = filePath.split("/tests");
-            if (parts.length > 1) {
-                filePath = "/tests" + parts[1];
-            }
-        }
-
-        Path path = Path.of(filePath);
-
-        if (!Files.exists(path)) {
-            // Пробуем альтернативные пути...
-            Path[] alternativePaths = {
-                Path.of("src", "main", "resources", filePath),
-                Path.of(filePath.replaceFirst("^/", "")),
-                Path.of("tests", filePath),
-                Path.of("/tests", filePath)
-            };
-
-            for (Path altPath : alternativePaths) {
-                if (Files.exists(altPath)) {
-                    path = altPath;
-                    break;
-                }
-            }
-
-            if (!Files.exists(path)) {
-                throw new IOException("Файл лабиринта не найден: " + filePath);
-            }
-        }
-
+        Path path = findFile(filePath);
         List<String> lines = Files.readAllLines(path);
+        if (lines.isEmpty()) {
+            throw new IOException("Файл пуст: " + path);
+        }
         int height = lines.size();
         int width = lines.getFirst().length();
 
@@ -53,40 +35,49 @@ public class MazeCommands {
         for (int y = 0; y < height; y++) {
             String line = lines.get(y);
             for (int x = 0; x < width; x++) {
-                grid[y][x] = charToCellType(line.charAt(x));
+                if (x < line.length()) {
+                    grid[y][x] = CellType.fromChar(line.charAt(x));
+                } else {
+                    grid[y][x] = CellType.EMPTY;
+                }
             }
         }
-
         return new Maze(grid);
     }
 
-    public static void saveMazeToFile(Maze maze, String filename) throws IOException {
-        // Исправляем путь для Docker
-        String fixedFilename = fixPathForDocker(filename);
-        Path path = Path.of(fixedFilename);
-
-        // Создаем директорию если нужно
-        Path parent = path.getParent();
-        if (parent != null && !Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
-
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            for (CellType[] row : maze.cells()) {
-                for (CellType cell : row) {
-                    writer.write(cell.getSymbol());
-                }
-                writer.newLine();
+    private static Path findFile(String rawPath) throws IOException {
+        String fileName = rawPath;
+        if (fileName.contains(":/")) {
+            String[] parts = fileName.split(TESTS);
+            if (parts.length > 1) {
+                fileName = TESTS + parts[1];
             }
         }
-        // Убрали вывод в консоль
+
+        String relativeName = fileName.replaceFirst("^[\\\\/]", "");
+
+        Path directPath = Path.of(fileName);
+        if (Files.exists(directPath)) {
+            return directPath;
+        }
+
+        for (Path root : SEARCH_ROOTS) {
+            Path candidate = root.resolve(relativeName);
+            if (Files.exists(candidate)) {
+                return candidate;
+            }
+        }
+
+        throw new IOException("Файл лабиринта не найден: " + rawPath + " (искали в: " + SEARCH_ROOTS + ")");
+    }
+
+    public static void saveMazeToFile(Maze maze, String filename, boolean useUnicode) throws IOException {
+        writeGridToFile(maze.cells(), filename, useUnicode);
     }
 
     private static String fixPathForDocker(String path) {
-        // Если путь содержит Windows-стиль, извлекаем только Linux-путь
         if (path.contains(":/")) {
-            // Ищем "/tests" в пути
-            int testsIndex = path.indexOf("/tests");
+            int testsIndex = path.indexOf(TESTS);
             if (testsIndex >= 0) {
                 return path.substring(testsIndex);
             }
@@ -122,30 +113,9 @@ public class MazeCommands {
             return suggestedStart;
         }
 
-        System.out.println("Начальная точка находится на стене. Ищем ближайшую свободную клетку...");
+        log.info("Начальная точка находится на стене. Ищем ближайшую свободную клетку...");
 
         return findNearestPassableCell(maze, suggestedStart, "начальной точки");
-    }
-
-    public static Point validateOrFindEndPoint(Maze maze, Point suggestedEnd) {
-        CellType[][] grid = maze.cells();
-        int width = grid[0].length;
-        int height = grid.length;
-
-        int x = suggestedEnd.x();
-        int y = suggestedEnd.y();
-
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            throw new IllegalArgumentException("Конечная точка вне границ лабиринта");
-        }
-
-        if (grid[y][x] != CellType.WALL) {
-            return suggestedEnd;
-        }
-
-        System.out.println("Конечная точка находится на стене. Ищем ближайшую свободную клетку...");
-
-        return findNearestPassableCell(maze, suggestedEnd, "конечной точки");
     }
 
     private static Point findNearestPassableCell(Maze maze, Point start, String pointName) {
@@ -186,64 +156,25 @@ public class MazeCommands {
     }
 
     public static void printMaze(Maze maze, boolean useUnicode) {
-        CellType[][] grid = maze.cells();
-        for (CellType[] row : grid) {
-            for (CellType cell : row) {
-                char symbol = cell.getSymbol();
-                if (useUnicode) {
-                    System.out.print(convertToUnicode(symbol));
-                } else {
-                    System.out.print(symbol);
-                }
-            }
-            System.out.println();
-        }
+        printGrid(maze.cells(), useUnicode);
     }
 
     public static void printMazeWithPath(Maze maze, List<Point> path, boolean useUnicode) {
-        CellType[][] grid = copyGrid(maze.cells());
+        CellType[][] gridWithPath = createGridWithPath(maze, path);
+        printGrid(gridWithPath, useUnicode);
+    }
 
-        for (Point point : path) {
-            if (grid[point.y()][point.x()] != CellType.START && grid[point.y()][point.x()] != CellType.END) {
-                grid[point.y()][point.x()] = CellType.PATH;
-            }
-        }
-
+    public static void printGrid(CellType[][] grid, boolean useUnicode) {
         for (CellType[] row : grid) {
             for (CellType cell : row) {
-                char symbol = cell.getSymbol();
                 if (useUnicode) {
-                    System.out.print(convertToUnicode(symbol));
+                    System.out.print(cell.getUnicode());
                 } else {
-                    System.out.print(symbol);
+                    System.out.print(cell.getSymbol());
                 }
             }
             System.out.println();
         }
-    }
-
-    public static String convertToUnicode(char symbol) {
-        return switch (symbol) {
-            case '#' -> "▓"; // стена
-            case ' ' -> "░"; // путь
-            case 'O' -> "●"; // старт
-            case 'X' -> "★"; // финиш
-            case '.' -> "•"; // найденный путь
-            default -> String.valueOf(symbol);
-        };
-    }
-
-    private static CellType charToCellType(char c) {
-        return switch (c) {
-            case '#' -> CellType.WALL;
-            case 'O' -> CellType.START;
-            case 'X' -> CellType.END;
-            case '.' -> CellType.PATH;
-            case 'G' -> CellType.GRASS;
-            case 'N' -> CellType.SAND;
-            case 'W' -> CellType.WATER;
-            default -> CellType.EMPTY;
-        };
     }
 
     private static CellType[][] copyGrid(CellType[][] original) {
@@ -254,29 +185,44 @@ public class MazeCommands {
         return copy;
     }
 
-    public static void saveSolutionToFile(Maze maze, List<Point> path, String filename) throws IOException {
-        CellType[][] grid = copyGrid(maze.cells());
+    public static void saveSolutionToFile(Maze maze, List<Point> path, String filename, boolean useUnicode)
+            throws IOException {
+        CellType[][] grid = createGridWithPath(maze, path);
+        writeGridToFile(grid, filename, useUnicode);
+    }
 
-        // Отмечаем путь в лабиринте
-        for (Point point : path) {
-            if (grid[point.y()][point.x()] != CellType.START && grid[point.y()][point.x()] != CellType.END) {
-                grid[point.y()][point.x()] = CellType.PATH;
-            }
-        }
+    private static void writeGridToFile(CellType[][] grid, String filename, boolean useUnicode) throws IOException {
+        String fixedFilename = fixPathForDocker(filename);
+        Path path = Path.of(fixedFilename);
 
-        Path outputPath = Path.of(filename);
-        Path parent = outputPath.getParent();
+        Path parent = path.getParent();
         if (parent != null && !Files.exists(parent)) {
             Files.createDirectories(parent);
         }
 
-        try (BufferedWriter writer = Files.newBufferedWriter(outputPath)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             for (CellType[] row : grid) {
                 for (CellType cell : row) {
-                    writer.write(cell.getSymbol());
+                    if (useUnicode) {
+                        writer.write(cell.getUnicode()); // Запишет ▓, ░
+                    } else {
+                        writer.write(cell.getSymbol()); // Запишет #, ' '
+                    }
                 }
                 writer.newLine();
             }
         }
+    }
+
+    private static CellType[][] createGridWithPath(Maze maze, List<Point> path) {
+        CellType[][] grid = copyGrid(maze.cells());
+
+        for (Point point : path) {
+            CellType currentType = grid[point.y()][point.x()];
+            if (currentType != CellType.START && currentType != CellType.END) {
+                grid[point.y()][point.x()] = CellType.PATH;
+            }
+        }
+        return grid;
     }
 }
