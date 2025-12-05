@@ -22,3 +22,67 @@ dependency-reduced-pom.xml
 ### log files ###
 *.log
 hs_err_pid*
+
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs
+hs_err_pid*
+
+# Build output
+target/
+build/
+out/
+bin/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+
+# System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data files (ваши txt файлы)
+*.txt
+*.csv
+*.data
+
+# Config files
+*.properties
+*.yml
+*.yaml
+
+# Test data
+test_data/
+input/
+output/
